@@ -5,7 +5,8 @@ def xor_checksum(data: bytes) -> int:
     return checksum
 
 
-def crc16(data: bytes) -> bytes:
+def crc16(data: bytes,byteorder='little') -> bytes:
+
     crc = 0x0000
     for byte in data:
         crc ^= byte
@@ -15,7 +16,8 @@ def crc16(data: bytes) -> bytes:
                 crc ^= 0xA001
             else:
                 crc >>= 1
-    return crc.to_bytes(2, byteorder='little')
+
+    return crc.to_bytes(2, byteorder=byteorder)
 
 
 def hex_string_to_bytes(hex_str: str) -> bytes:
@@ -54,8 +56,11 @@ if __name__ == "__main__":
         hex_input = input("请输入十六进制字符串: ")
         data = hex_string_to_bytes(hex_input)
 
-        crc = crc16(data)
-        print("CRC16:", crc.hex())
+        crc = crc16(data,'big')
+        print("CRC16-big:", crc.hex())
+
+        crc = crc16(data,'little')
+        print("CRC16-little:", crc.hex())
 
         checksum = xor_checksum(data)
         print("CRC8:", hex(checksum))
@@ -63,3 +68,5 @@ if __name__ == "__main__":
         # 计算校验和
         checksum_zs = calculate_checksum(hex_input)
         print(f"中升油机校验和: 0x{checksum_zs:02X}")
+
+        print('------------------------')

@@ -38,15 +38,49 @@ def js_to_json(js_str):
 # 示例用法
 if __name__ == "__main__":
     js_object_str = """
-    {
-        couponNo: '',
-        discountDetail: {
-            couponDiscountAmt: 0,
-            couponNo: '',
-            gradeDiscountAmt: 211.56,
-            specialDiscountAmt: 0,
-        }
-    }
+{
+
+    couponNo: '',
+
+    discountDetail: {
+
+      couponDiscountAmt: 0,
+
+      couponNo: '',
+
+      gradeDiscountAmt: 0.01,
+
+      specialDiscountAmt: 0
+
+    },
+
+    fpId: '16548100501',
+
+    fpNo: '1',
+
+    memberId: '137470129',
+
+    officialAccountOpenid: 'o1dr10QhDT7aAvkdewpe6hVs9dJU',
+
+    openId: 'odjjG5a8fn2gFQOcL9MMcvJgzXK8',
+
+    orderAmount: 1,
+
+    payAmount: 0,
+
+    prId: 11,
+
+    prName: '92#汽油',
+
+    price: 7.07,
+
+    stationId: '165481005',
+
+    storeId: '6149379668414e2b01f54e077bdb0894',
+
+    storeShortName: '陈龙测试站'
+
+  }
     """
 
     try:

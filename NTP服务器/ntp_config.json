@@ -1,0 +1,17 @@
+{
+    "server": {
+        "host": "0.0.0.0",
+        "port": 123,
+        "stratum": 1
+    },
+    "logging": {
+        "level": "INFO",
+        "format": "%(asctime)s - %(name)s - %(levelname)s - %(message)s",
+        "file": "ntp_server.log"
+    },
+    "advanced": {
+        "poll_interval": 1024,
+        "precision": -18,
+        "reference_clock": "LOCL"
+    }
+}

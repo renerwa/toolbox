@@ -244,7 +244,7 @@ def main():
             print("\n微信支付AES-256-GCM解密")
             key = input("请输入API密钥 (32字节): ").strip()
             nonce = input("请输入Nonce (12字节): ").strip()
-            aad = input("请输入AAD (通常是请求URL): ").strip() or None
+            aad = input("请输入associated_data附加认证数据 (通常是 coupon ): ").strip() or None
             tag = input("请输入Tag (可选，如果数据中不包含): ").strip() or None
             
             result = decryptor.aes_decrypt(encrypted_data, key, nonce, 'GCM', tag, aad)

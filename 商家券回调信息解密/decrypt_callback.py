@@ -242,7 +242,7 @@ def main():
             
         elif choice == '6':
             print("\n微信支付AES-256-GCM解密")
-            key = input("请输入API密钥 (32字节): ").strip()
+            key = input("请输入API密钥 (对应商户或者服务商的APIV3 密钥，32字节): ").strip()
             nonce = input("请输入Nonce (12字节): ").strip()
             aad = input("请输入associated_data附加认证数据 (通常是 coupon ): ").strip() or None
             tag = input("请输入Tag (可选，如果数据中不包含): ").strip() or None

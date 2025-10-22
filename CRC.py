@@ -57,7 +57,7 @@ if __name__ == "__main__":
         data = hex_string_to_bytes(hex_input)
 
         crc = crc16(data,'big')
-        print("CRC16-big:", crc.hex())
+        print("CRC16-big（中石化）:", crc.hex())
 
         crc = crc16(data,'little')
         print("CRC16-little:", crc.hex())

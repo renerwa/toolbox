@@ -23,6 +23,11 @@ def js_to_json(js_str):
     fixed = re.sub(r"'((?:\\'|[^'])*)'", lambda m: '"{}"'.format(m.group(1).replace('\\\'', '\'')), fixed)
     # 处理ISO日期格式（将裸露的日期时间字符串加上双引号）
     fixed = re.sub(r':\s*(\d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2}\.\d{3}Z)', r': "\1"', fixed)
+    # 处理JavaScript特有的[Object]表示法，转换为空对象
+    fixed = re.sub(r':\s*\[Object\]', r': {}', fixed)
+    # 处理其他可能的JavaScript特殊值
+    fixed = re.sub(r':\s*undefined', r': null', fixed)
+    fixed = re.sub(r':\s*NaN', r': null', fixed)
     # 移除尾随逗号
     fixed = re.sub(r',\s*([}\]])', r'\1', fixed)
 
@@ -41,57 +46,85 @@ def js_to_json(js_str):
 # 示例用法
 if __name__ == "__main__":
     js_object_str = """
- {
+{
 
-  _id: 'ORD1654810051761114037934629',
+  func: 'syncOrder',
 
-  official_account_openid: 'o1dr10QhDT7aAvkdewpe6hVs9dJU',
+  model: 'order',
 
-  open_id: 'odjjG5a8fn2gFQOcL9MMcvJgzXK8',
+  orderData: {
 
-  member_id: '137470129',
+    _id: 'ORD1704510021761183157396700',
 
-  store_id: '6149379668414e2b01f54e077bdb0894',
+    coupon_no: '14253910563',
 
-  store_short_name: '陈龙测试站',
+    coupon_verified: true,
 
-  station_id: '165481005',
+    coupon_verify_time: '2025-10-23T01:32:50.947Z',
 
-  fp_no: '1',
+    create_time: '2025-10-23T01:32:37.396Z',
 
-  fp_id: '16548100501',
+    discount_detail: {
 
-  pr_id: 11,
+      couponDiscountAmt: 14,
 
-  pr_name: '92#汽油',
+      couponNo: '14253910563',
 
-  price: 6.5,
+      gradeDiscountAmt: 0,
 
-  order_amount: 1,
+      specialDiscountAmt: 0
 
-  pay_amount: 0,
+    },
 
-  coupon_no: '',
+    fp_id: '17045100203',
 
-  pay_status: 'pending',
+    fp_no: '3',
 
-  sync_status: 'pending',
+    member_id: '137308838',
 
-  create_time: 2025-10-22T06:20:37.935Z,
+    official_account_openid: 'og6dbwxqJpoZ9_DK_fK-8x9M6gvs',
 
-  update_time: 2025-10-22T06:20:37.935Z,
+    open_id: 'odjjG5aC7uugrrSrPxHDr1OnDgpo',
 
-  discount_detail: {
+    order_amount: 20000,
 
-    couponDiscountAmt: 0,
+    paid_at: '2025-10-23T01:33:57.666Z',
 
-    couponNo: '',
+    pay_amount: 18600,
 
-    gradeDiscountAmt: 0.01,
+    pay_order_id: '4200002928202510233762158781',
 
-    specialDiscountAmt: 0
+    pay_status: 'paid',
 
-  }
+    pr_id: 11,
+
+    pr_name: '92#汽油',
+
+    price: 7.12,
+
+    station_id: '170451002',
+
+    store_id: '4a5befaf68db865400d872ec4e392099',
+
+    store_short_name: '安新加油站',
+
+    sync_response: { code: 0, data: [Object], msg: '成功' },
+
+    sync_status: 'syncing',
+
+    sync_time: '2025-10-23T01:33:27.680Z',
+
+    update_time: '2025-10-23T01:33:57.666Z'
+
+  },
+
+  orderId: 'ORD1704510021761183157396700',
+
+  storeId: '4a5befaf68db865400d872ec4e392099',
+
+  tcbContext: {},
+
+  userInfo: { appId: 'wxc3ce4ebdccf5c1a5' }
 
 }
     """

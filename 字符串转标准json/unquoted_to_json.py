@@ -28,6 +28,8 @@ def js_to_json(js_str):
     # 处理其他可能的JavaScript特殊值
     fixed = re.sub(r':\s*undefined', r': null', fixed)
     fixed = re.sub(r':\s*NaN', r': null', fixed)
+    # 处理裸露的变量作为值 (e.g. {key: some_var})
+    fixed = re.sub(r':\s*((?!(?:true|false|null)\b)[a-zA-Z_][a-zA-Z0-9_]*)', r': "\1"', fixed)
     # 移除尾随逗号
     fixed = re.sub(r',\s*([}\]])', r'\1', fixed)
 
@@ -47,86 +49,15 @@ def js_to_json(js_str):
 if __name__ == "__main__":
     js_object_str = """
 {
-
-  func: 'syncOrder',
-
-  model: 'order',
-
-  orderData: {
-
-    _id: 'ORD1704510021761183157396700',
-
-    coupon_no: '14253910563',
-
-    coupon_verified: true,
-
-    coupon_verify_time: '2025-10-23T01:32:50.947Z',
-
-    create_time: '2025-10-23T01:32:37.396Z',
-
-    discount_detail: {
-
-      couponDiscountAmt: 14,
-
-      couponNo: '14253910563',
-
-      gradeDiscountAmt: 0,
-
-      specialDiscountAmt: 0
-
-    },
-
-    fp_id: '17045100203',
-
-    fp_no: '3',
-
-    member_id: '137308838',
-
-    official_account_openid: 'og6dbwxqJpoZ9_DK_fK-8x9M6gvs',
-
-    open_id: 'odjjG5aC7uugrrSrPxHDr1OnDgpo',
-
-    order_amount: 20000,
-
-    paid_at: '2025-10-23T01:33:57.666Z',
-
-    pay_amount: 18600,
-
-    pay_order_id: '4200002928202510233762158781',
-
-    pay_status: 'paid',
-
-    pr_id: 11,
-
-    pr_name: '92#汽油',
-
-    price: 7.12,
-
-    station_id: '170451002',
-
-    store_id: '4a5befaf68db865400d872ec4e392099',
-
-    store_short_name: '安新加油站',
-
-    sync_response: { code: 0, data: [Object], msg: '成功' },
-
-    sync_status: 'syncing',
-
-    sync_time: '2025-10-23T01:33:27.680Z',
-
-    update_time: '2025-10-23T01:33:57.666Z'
-
-  },
-
-  orderId: 'ORD1704510021761183157396700',
-
-  storeId: '4a5befaf68db865400d872ec4e392099',
-
-  tcbContext: {},
-
-  userInfo: { appId: 'wxc3ce4ebdccf5c1a5' }
-
-}
+              type: 'order',
+              func: 'handleAdjustmentPaymentSuccess',
+              adjustmentId: order,
+              paymentData: {
+                outTradeNo: out_trade_no,
+                transactionId: transaction_id,
+                totalAmount: order
+              }
+            }  
     """
 
     try:

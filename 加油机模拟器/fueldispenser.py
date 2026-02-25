@@ -7,6 +7,7 @@ import pymysql
 import datetime
 from datetime import datetime
 
+
 import logging
 from logging.handlers import TimedRotatingFileHandler
 
@@ -31,10 +32,10 @@ lock = threading.Lock()  # 用于保护共享数据的锁
 max_retries=30
 
 # 数据库信息
-host_name = "172.16.10.111"
+host_name = "172.16.10.112"
 user_name = "root"
 user_password = "Costc0@MySQL2023"
-db_name = "fuelpump"
+db_name = "gss"
 
 
 def query_fuel_pump_status(host, user, password, db, port_number, mainboard_id):
@@ -95,10 +96,10 @@ def update_pump_status(host, user, password, database, port_number, mainboard_id
 
     # 数据库连接参数（不包括port_number，因为它通常不是直接需要的）
     db_config = {
-        'host': "172.16.10.111",
-        'user': "root",
-        'password': "Costc0@MySQL2023",
-        'database': "fuelpump",
+        'host': host_name,
+        'user': user_name,
+        'password': user_password,
+        'database': db_name,
         'charset': 'utf8mb4',
         'cursorclass': pymysql.cursors.DictCursor
     }
@@ -152,10 +153,10 @@ def update_pump_status2(host, user, password, database, port_number, mainboard_i
 
     # 数据库连接参数（不包括port_number，因为它通常不是直接需要的）
     db_config = {
-        'host': "172.16.10.111",
-        'user': "root",
-        'password': "Costc0@MySQL2023",
-        'database': "fuelpump",
+        'host': host_name,
+        'user': user_name,
+        'password': user_password,
+        'database': db_name,
         'charset': 'utf8mb4',
         'cursorclass': pymysql.cursors.DictCursor
     }
@@ -207,10 +208,10 @@ def update_HasTransaction(host, user, password, database, port_number, mainboard
 
     # 数据库连接参数（不包括port_number，因为它通常不是直接需要的）
     db_config = {
-        'host': "172.16.10.111",
-        'user': "root",
-        'password': "Costc0@MySQL2023",
-        'database': "fuelpump",
+        'host': host_name,
+        'user': user_name,
+        'password': user_password,
+        'database': db_name,
         'charset': 'utf8mb4',
         'cursorclass': pymysql.cursors.DictCursor
     }
@@ -258,10 +259,10 @@ def update_SerialNumber(host, user, password, database, port_number, mainboard_i
 
     # 数据库连接参数（不包括port_number，因为它通常不是直接需要的）
     db_config = {
-        'host': "172.16.10.111",
-        'user': "root",
-        'password': "Costc0@MySQL2023",
-        'database': "fuelpump",
+        'host': host_name,
+        'user': user_name,
+        'password': user_password,
+        'database': db_name,
         'charset': 'utf8mb4',
         'cursorclass': pymysql.cursors.DictCursor
     }
@@ -308,10 +309,10 @@ def update_Price(host, user, password, database, port_number, mainboard_id,price
 
     # 数据库连接参数（不包括port_number，因为它通常不是直接需要的）
     db_config = {
-        'host': "172.16.10.111",
-        'user': "root",
-        'password': "Costc0@MySQL2023",
-        'database': "fuelpump",
+        'host': host_name,
+        'user': user_name,
+        'password': user_password,
+        'database': db_name,
         'charset': 'utf8mb4',
         'cursorclass': pymysql.cursors.DictCursor
     }
@@ -339,6 +340,23 @@ def update_Price(host, user, password, database, port_number, mainboard_id,price
     finally:
         # 关闭数据库连接
         connection.close() if connection else None
+
+def get_pump_status(port_number, mainboard_id):
+    res = query_fuel_pump_status(host_name, user_name, user_password, db_name, port_number, mainboard_id)
+    if not res:
+        return {
+            'PumpStatus': '0',
+            'Price': 0.0,
+            'CurrentAccumulation': 0.0,
+            'HasTransaction': 0,
+            'OnlineStatus': '1',
+            'SerialNumber': 0,
+            'fuel_start_time': datetime.now()
+        }
+    r = res[0] if isinstance(res, (list, tuple)) and len(res) > 0 else res
+    if 'HasTransaction' not in r:
+        r['HasTransaction'] = 0
+    return r
 
 
 def fuel_dispenser(command,port):
@@ -368,7 +386,7 @@ def fuel_dispenser(command,port):
         # 提取第五个字节
         fifth_byte = command[8:10].lower()
         if fifth_byte == "01":
-            r=query_fuel_pump_status(host_name,user_name,user_password,db_name,port,'1')[0]
+            r=get_pump_status(port,'1')
             if r['OnlineStatus']=='0':
             # 如果油机离线，直接报错
                 return bytes.fromhex("EE07")
@@ -384,7 +402,7 @@ def fuel_dispenser(command,port):
                 bytes_obj = bytes.fromhex("adebc894010037428f6f")
             return bytes_obj
         elif fifth_byte == "02":
-            r = query_fuel_pump_status(host_name, user_name, user_password, db_name, port, '2')[0]
+            r = get_pump_status(port,'2')
             if r['OnlineStatus']=='0':
             # 如果油机离线，直接报错
                 return bytes.fromhex("EE07")
@@ -409,10 +427,11 @@ def fuel_dispenser(command,port):
         fifth_byte = command[8:10].lower()
         if fifth_byte == "01":
             s="adebc89601000010000110123006"
-            price=query_fuel_pump_status(host_name,user_name,user_password,db_name,port,'1')[0]['Price']
+            price=get_pump_status(port,'1')['Price']
             s=s+str(int(price*100)).zfill(4)+"0000"
-            num=query_fuel_pump_status(host_name,user_name,user_password,db_name,port,'1')[0]['SerialNumber']
-            accumulation=query_fuel_pump_status(host_name,user_name,user_password,db_name,port,'1')[0]['CurrentAccumulation']
+            r1=get_pump_status(port,'1')
+            num=r1['SerialNumber']
+            accumulation=r1['CurrentAccumulation']
             accumulation_int=int(accumulation*100)
             accumulation_int_s= hex(accumulation_int)[2:].zfill(8)
             s=s+str(num).zfill(4)+accumulation_int_s+accumulation_int_s
@@ -423,10 +442,11 @@ def fuel_dispenser(command,port):
             return bytes_obj
         elif fifth_byte == "02":
             s="adebc89602000010000110123006"
-            price=query_fuel_pump_status(host_name,user_name,user_password,db_name,port,'2')[0]['Price']
+            price=get_pump_status(port,'2')['Price']
             s=s+str(int(price*100)).zfill(4)+"0000"
-            num=query_fuel_pump_status(host_name,user_name,user_password,db_name,port,'2')[0]['SerialNumber']
-            accumulation=query_fuel_pump_status(host_name,user_name,user_password,db_name,port,'2')[0]['CurrentAccumulation']
+            r2=get_pump_status(port,'2')
+            num=r2['SerialNumber']
+            accumulation=r2['CurrentAccumulation']
             accumulation_int=int(accumulation*100)
             accumulation_int_s= hex(accumulation_int)[2:].zfill(8)
             s=s+str(num).zfill(4)+accumulation_int_s+accumulation_int_s
@@ -518,6 +538,7 @@ def fuel_dispenser(command,port):
         return  bytes.fromhex("EE05")
 
 def xor_checksum(data: bytes,len) -> bytes:
+
     if len == 1 :
         checksum = 0
         for byte in data:
@@ -536,14 +557,33 @@ def xor_checksum(data: bytes,len) -> bytes:
         return checksum.to_bytes(2, byteorder='little')
     else:
         return "错误的长度"
+
+
 def handle_connection(port):
+    """
+    处理指定端口的 TCP 连接，模拟油机通信流程。
+    函数职责：在指定本地端口上建立一个出站 TCP 连接到 172.16.10.112:18099，接收报文后调用 fuel_dispenser 生成响应，并回发给服务器。
+    
+    参数:
+    - port: 本地绑定的端口号，用于区分不同油机通道。
+    
+    流程:
+    1. 创建 TCP socket 并绑定到本地端口。
+    2. 连接远程服务器（172.16.10.112:18099）。
+    3. 将连接信息记录到全局 connections 字典。
+    4. 循环接收数据，调用 fuel_dispenser 生成响应，延时后回发。
+    5. 异常或连接断开时，根据 max_retries 进行重试。
+    6. 无论成功或失败，最终清理 connections 字典并关闭 socket。
+    """
     global max_retries
     try:
+        # 创建一个TCP socket,绑定到本地端口
         client_socket = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
         client_socket.bind(('', port))
-        severs='172.16.10.111'
+        severs='172.16.10.112'
         # severs='127.0.0.1'
 
+        # 10899是油管家本地dev环境，gss服务的油机连接端口（上海和南京环境是8099）
         client_socket.connect((severs, 18099))
         print(f"Connected to port {port}")
 
@@ -585,7 +625,6 @@ def handle_connection(port):
                 connections[port]['socket'].close()
                 del connections[port]
 
-
 def send_abc_to_ports():
     global connections
     while True:
@@ -595,14 +634,14 @@ def send_abc_to_ports():
             for port, info in list(connections.items()):
                 # print(datetime.datetime.fromtimestamp(time.time()),  '油枪挂抢程序','port', port)
 
-                r = query_fuel_pump_status(host_name, user_name, user_password, db_name, port, '1')[0]
+                r = get_pump_status(port,'1')
                 if r['PumpStatus']=='1':
                     print(port, current_time, type(current_time), r['fuel_start_time'], type(r['fuel_start_time']))
                     if  r['PumpStatus']=='1'and current_time - r['fuel_start_time'].timestamp()   >= random.uniform(3, 8) :
                         update_pump_status(host_name,user_name,user_password,db_name,port,'1')
                         print('port:',port,'mainboard_id:',1,'加油完成')
 
-                r = query_fuel_pump_status(host_name, user_name, user_password, db_name, port, '2')[0]
+                r = get_pump_status(port,'2')
                 if r['PumpStatus']=='1':
                     print(port,current_time,type(current_time),r['fuel_start_time']  ,type(r['fuel_start_time']))
                     if r['PumpStatus']=='1'and current_time - r['fuel_start_time'].timestamp() >= random.uniform(3, 8) :
@@ -650,8 +689,8 @@ def send_udp_broadcast(broadcast_ip, port, message):
 
     # 主程序逻辑
 def main():
-    ports = [1030, 1031,1032,1033,1034,1035,1036,1037,1038,1039,1040,1041,2030, 2031,2032,2033,2034,2035,2036,2037,2038,2039,2040,2041,3030, 3031,3032,3033,3034,3035,3036,3037,3038,3039,3040,3041]  # 示例端口列表
-    # ports = [2030]  # 示例端口列表
+    # ports = [1030, 1031,1032,1033,1034,1035,1036,1037,1038,1039,1040,1041,2030, 2031,2032,2033,2034,2035,2036,2037,2038,2039,2040,2041,3030, 3031,3032,3033,3034,3035,3036,3037,3038,3039,3040,3041]  # 示例端口列表
+    ports = [1030,1031]  # 示例端口列表
     for port in ports:
         threading.Thread(target=handle_connection, args=(port,)).start()
 

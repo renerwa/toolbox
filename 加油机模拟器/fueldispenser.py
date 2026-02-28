@@ -9,14 +9,17 @@ from datetime import datetime
 
 
 import logging
+import os
 from logging.handlers import TimedRotatingFileHandler
 
 # 创建logger
 logger = logging.getLogger('my_logger')
 logger.setLevel(logging.DEBUG)  # 设置日志级别
 
-# 创建handler，设置为每小时滚动一次
-handler = TimedRotatingFileHandler('logs/myapp.log', when='H', interval=1, backupCount=200)
+log_base = os.path.dirname(os.path.abspath(__file__))
+log_dir = os.path.join(log_base, 'logs')
+os.makedirs(log_dir, exist_ok=True)
+handler = TimedRotatingFileHandler(os.path.join(log_dir, 'myapp.log'), when='H', interval=1, backupCount=200)
 handler.setLevel(logging.DEBUG)
 
 # 创建formatter，并设置handler的formatter
@@ -79,6 +82,7 @@ def query_fuel_pump_status(host, user, password, db, port_number, mainboard_id):
 
 def update_pump_status(host, user, password, database, port_number, mainboard_id):
     """
+    将对应油枪状态设置为空闲并设置为有交易
     更新数据库中指定PortNumber和MainboardID的记录的PumpStatus、HasTransaction和CurrentAccumulation。
 
     参数:
@@ -136,7 +140,8 @@ def update_pump_status(host, user, password, database, port_number, mainboard_id
 
 def update_pump_status2(host, user, password, database, port_number, mainboard_id):
     """
-    更新数据库中指定PortNumber和MainboardID的记录的PumpStatus、HasTransaction和CurrentAccumulation。
+    设置对应油枪开始加油
+    更新数据库中指定PortNumber和MainboardID的记录的PumpStatus（油枪状态）、HasTransaction（是否有交易）和CurrentAccumulation（当前累计值）。
 
     参数:
     - host: 数据库主机名
@@ -191,6 +196,7 @@ def update_pump_status2(host, user, password, database, port_number, mainboard_i
 
 def update_HasTransaction(host, user, password, database, port_number, mainboard_id):
     """
+    将对应油枪状态设置为无交易
     更新数据库中指定PortNumber和MainboardID的记录的PumpStatus、HasTransaction和CurrentAccumulation。
 
     参数:
@@ -473,6 +479,7 @@ def fuel_dispenser(command,port):
             return bytes_obj
         else:
             return bytes.fromhex("EE04")
+    # 设置油机监控模式
     elif fourth_byte == "57":
         fifth_byte = command[8:10].lower()
         if fifth_byte == "01":
@@ -483,6 +490,7 @@ def fuel_dispenser(command,port):
             return bytes_obj
         else:
             return bytes.fromhex("EE04")
+    # 下发定量
     elif fourth_byte == "52":
         fifth_byte = command[8:10].lower()
         if fifth_byte == "01":
@@ -525,10 +533,10 @@ def fuel_dispenser(command,port):
     elif fourth_byte == "59":
         fifth_byte = command[8:10].lower()
         if fifth_byte == "01":
-            bytes_obj = bytes.fromhex("adebc859cc94")
+            bytes_obj = bytes.fromhex("adebc85901cc94")
             return bytes_obj
         elif fifth_byte == "02":
-            bytes_obj = bytes.fromhex("adebc859cc97 ")
+            bytes_obj = bytes.fromhex("adebc85902cc97")
             return bytes_obj
 
         else:
@@ -637,6 +645,7 @@ def send_abc_to_ports():
                 r = get_pump_status(port,'1')
                 if r['PumpStatus']=='1':
                     print(port, current_time, type(current_time), r['fuel_start_time'], type(r['fuel_start_time']))
+                    # 如果油枪状态为1（正在加油），且当前时间减去加油开始时间大于等于某个随机值（3到8秒）就调用update_pump_status函数将油枪状态设置为空闲并设置油枪有交易可读
                     if  r['PumpStatus']=='1'and current_time - r['fuel_start_time'].timestamp()   >= random.uniform(3, 8) :
                         update_pump_status(host_name,user_name,user_password,db_name,port,'1')
                         print('port:',port,'mainboard_id:',1,'加油完成')

@@ -1,0 +1,453 @@
+<!doctype html>
+<html lang="zh-CN">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>Google Trends 链接生成</title>
+    <style>
+      :root {
+        color-scheme: light dark;
+        --bg: #0b0d10;
+        --panel: #121620;
+        --text: #e9eef6;
+        --muted: #a7b2c5;
+        --border: rgba(255, 255, 255, 0.12);
+        --accent: #4c8dff;
+        --danger: #ff5c73;
+      }
+      @media (prefers-color-scheme: light) {
+        :root {
+          --bg: #f6f8fb;
+          --panel: #ffffff;
+          --text: #0c1524;
+          --muted: #516070;
+          --border: rgba(10, 20, 35, 0.12);
+          --accent: #1d5cff;
+          --danger: #d6455d;
+        }
+      }
+      * {
+        box-sizing: border-box;
+      }
+      body {
+        margin: 0;
+        font-family: ui-sans-serif, system-ui, -apple-system, Segoe UI, Roboto, Helvetica,
+          Arial, "Apple Color Emoji", "Segoe UI Emoji";
+        background: var(--bg);
+        color: var(--text);
+      }
+      .wrap {
+        max-width: 980px;
+        padding: 28px 18px 40px;
+        margin: 0 auto;
+      }
+      header {
+        display: flex;
+        gap: 12px;
+        align-items: baseline;
+        justify-content: space-between;
+        flex-wrap: wrap;
+      }
+      h1 {
+        font-size: 20px;
+        margin: 0;
+        letter-spacing: 0.2px;
+      }
+      .meta {
+        font-size: 12px;
+        color: var(--muted);
+      }
+      .grid {
+        display: grid;
+        grid-template-columns: 1fr;
+        gap: 16px;
+        margin-top: 16px;
+      }
+      @media (min-width: 900px) {
+        .grid {
+          grid-template-columns: 1.1fr 0.9fr;
+        }
+      }
+      .card {
+        background: var(--panel);
+        border: 1px solid var(--border);
+        border-radius: 12px;
+        padding: 14px;
+      }
+      .label {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        gap: 10px;
+        margin-bottom: 10px;
+      }
+      .label b {
+        font-size: 13px;
+        font-weight: 650;
+      }
+      .label span {
+        font-size: 12px;
+        color: var(--muted);
+      }
+      textarea {
+        width: 100%;
+        min-height: 320px;
+        resize: vertical;
+        padding: 12px;
+        border-radius: 10px;
+        border: 1px solid var(--border);
+        background: transparent;
+        color: var(--text);
+        font-size: 14px;
+        line-height: 1.45;
+        outline: none;
+      }
+      textarea:focus {
+        border-color: rgba(76, 141, 255, 0.55);
+        box-shadow: 0 0 0 4px rgba(76, 141, 255, 0.12);
+      }
+      input[type="text"] {
+        width: 100%;
+        padding: 10px 12px;
+        border-radius: 10px;
+        border: 1px solid var(--border);
+        background: transparent;
+        color: var(--text);
+        font-size: 14px;
+        outline: none;
+      }
+      input[type="text"]:focus {
+        border-color: rgba(76, 141, 255, 0.55);
+        box-shadow: 0 0 0 4px rgba(76, 141, 255, 0.12);
+      }
+      .row {
+        display: flex;
+        gap: 10px;
+        flex-wrap: wrap;
+        margin-top: 12px;
+      }
+      button {
+        appearance: none;
+        border: 1px solid var(--border);
+        background: transparent;
+        color: var(--text);
+        border-radius: 10px;
+        padding: 10px 12px;
+        font-size: 13px;
+        cursor: pointer;
+      }
+      button.primary {
+        background: rgba(76, 141, 255, 0.18);
+        border-color: rgba(76, 141, 255, 0.5);
+      }
+      button:hover {
+        border-color: rgba(255, 255, 255, 0.22);
+      }
+      @media (prefers-color-scheme: light) {
+        button:hover {
+          border-color: rgba(10, 20, 35, 0.2);
+        }
+      }
+      .hint {
+        margin-top: 10px;
+        font-size: 12px;
+        color: var(--muted);
+      }
+      .links {
+        display: grid;
+        gap: 10px;
+      }
+      .linkItem {
+        border: 1px solid var(--border);
+        border-radius: 10px;
+        padding: 10px;
+        display: grid;
+        gap: 8px;
+      }
+      .linkTop {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        gap: 10px;
+      }
+      .pill {
+        font-size: 12px;
+        color: var(--muted);
+      }
+      a {
+        color: var(--accent);
+        text-decoration: none;
+        word-break: break-all;
+        font-size: 13px;
+        line-height: 1.35;
+      }
+      a:hover {
+        text-decoration: underline;
+      }
+      .error {
+        color: var(--danger);
+        font-size: 12px;
+      }
+      .empty {
+        color: var(--muted);
+        font-size: 13px;
+        padding: 10px 4px;
+      }
+      .footerRow {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        gap: 10px;
+        flex-wrap: wrap;
+        margin-top: 12px;
+      }
+      .countBox {
+        font-size: 12px;
+        color: var(--muted);
+      }
+      code {
+        font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono",
+          "Courier New", monospace;
+        font-size: 12px;
+      }
+    </style>
+  </head>
+  <body>
+    <div class="wrap">
+      <header>
+        <h1>Google Trends 链接生成</h1>
+        <div class="meta">每 5 个关键词生成 1 个链接</div>
+      </header>
+
+      <div class="grid">
+        <section class="card">
+          <div class="label">
+            <b>关键词（每行一个）</b>
+            <span id="statusText"></span>
+          </div>
+          <textarea
+            id="keywordsInput"
+            placeholder="例如：&#10;apple&#10;tesla&#10;openai&#10;小米&#10;比亚迪&#10;..."
+            spellcheck="false"
+          ></textarea>
+          <div class="row">
+            <button class="primary" id="generateBtn" type="button">生成链接</button>
+            <button id="copyAllBtn" type="button">复制全部链接</button>
+            <button id="clearBtn" type="button">清空</button>
+          </div>
+          <div class="label">
+            <b>链接格式（包含 {q}）</b>
+            <span id="formatMeta"></span>
+          </div>
+          <input
+            id="templateInput"
+            type="text"
+            placeholder="例如：https://trends.google.com/explore?q={q}&date=now%207-d"
+          />
+          <div class="hint">当前模板预览：<code id="formatPreview"></code></div>
+          <div class="footerRow">
+            <div class="countBox" id="countBox"></div>
+            <div class="error" id="errorBox" role="status" aria-live="polite"></div>
+          </div>
+        </section>
+
+        <section class="card">
+          <div class="label">
+            <b>生成结果</b>
+            <span id="linksMeta"></span>
+          </div>
+          <div class="links" id="linksBox"></div>
+        </section>
+      </div>
+    </div>
+
+    <script>
+      const inputEl = document.getElementById("keywordsInput");
+      const statusTextEl = document.getElementById("statusText");
+      const countBoxEl = document.getElementById("countBox");
+      const errorBoxEl = document.getElementById("errorBox");
+      const linksBoxEl = document.getElementById("linksBox");
+      const linksMetaEl = document.getElementById("linksMeta");
+      const generateBtn = document.getElementById("generateBtn");
+      const copyAllBtn = document.getElementById("copyAllBtn");
+      const clearBtn = document.getElementById("clearBtn");
+      const templateInput = document.getElementById("templateInput");
+      const formatPreviewEl = document.getElementById("formatPreview");
+      const formatMetaEl = document.getElementById("formatMeta");
+      const defaultTemplate = "https://trends.google.com/explore?q={q}&date=now%207-d";
+      const savedTemplate = localStorage.getItem("trends_template");
+      templateInput.value = (savedTemplate && savedTemplate.trim()) || defaultTemplate;
+
+      function parseKeywords(text) {
+        return text
+          .split(/\r?\n/)
+          .map((s) => s.trim())
+          .filter((s) => s.length > 0);
+      }
+      function uniqueKeywords(items) {
+        const seen = new Set();
+        const out = [];
+        for (const it of items) {
+          if (!seen.has(it)) {
+            seen.add(it);
+            out.push(it);
+          }
+        }
+        return out;
+      }
+
+      function chunkByFive(items) {
+        const out = [];
+        for (let i = 0; i < items.length; i += 5) out.push(items.slice(i, i + 5));
+        return out;
+      }
+
+      function buildTrendsUrl(keywords) {
+        const encoded = keywords.map((k) => encodeURIComponent(k));
+        const q = encoded.join("%2C");
+        const tpl = (templateInput.value || defaultTemplate).trim();
+        return tpl.replace("{q}", q);
+      }
+      function updateFormatPreview() {
+        const tpl = (templateInput.value || defaultTemplate).trim();
+        formatPreviewEl.textContent = tpl.replace("{q}", "...");
+        formatMetaEl.textContent = tpl.includes("{q}") ? "" : "缺少 {q}";
+      }
+      updateFormatPreview();
+      templateInput.addEventListener("input", () => {
+        const v = templateInput.value.trim();
+        localStorage.setItem("trends_template", v);
+        updateFormatPreview();
+      });
+
+      async function copyTextToClipboard(text) {
+        if (!text) return;
+        if (navigator.clipboard && window.isSecureContext) {
+          await navigator.clipboard.writeText(text);
+          return;
+        }
+        const ta = document.createElement("textarea");
+        ta.value = text;
+        ta.style.position = "fixed";
+        ta.style.left = "-9999px";
+        ta.style.top = "0";
+        document.body.appendChild(ta);
+        ta.focus();
+        ta.select();
+        document.execCommand("copy");
+        document.body.removeChild(ta);
+      }
+
+      function setError(message) {
+        errorBoxEl.textContent = message || "";
+      }
+
+      function render() {
+        setError("");
+        const tpl = (templateInput.value || defaultTemplate).trim();
+        if (!tpl.includes("{q}")) {
+          linksBoxEl.innerHTML = "";
+          statusTextEl.textContent = "";
+          countBoxEl.textContent = "";
+          linksMetaEl.textContent = "";
+          setError("链接格式必须包含 {q}");
+          return;
+        }
+        const keywords = uniqueKeywords(parseKeywords(inputEl.value));
+        const groups = chunkByFive(keywords);
+
+        statusTextEl.textContent = keywords.length ? `识别到 ${keywords.length} 个关键词` : "";
+        countBoxEl.textContent = `关键词：${keywords.length}，链接：${groups.length}`;
+        linksMetaEl.textContent = groups.length ? `${groups.length} 条` : "";
+
+        linksBoxEl.innerHTML = "";
+        if (keywords.length === 0) {
+          const div = document.createElement("div");
+          div.className = "empty";
+          div.textContent = "输入关键词后会在这里生成链接。";
+          linksBoxEl.appendChild(div);
+          return;
+        }
+
+        groups.forEach((group, idx) => {
+          const url = buildTrendsUrl(group);
+
+          const item = document.createElement("div");
+          item.className = "linkItem";
+
+          const top = document.createElement("div");
+          top.className = "linkTop";
+
+          const pill = document.createElement("div");
+          pill.className = "pill";
+          pill.textContent = `第 ${idx + 1} 条（${group.length} 个）`;
+
+          const copyBtn = document.createElement("button");
+          copyBtn.type = "button";
+          copyBtn.textContent = "复制";
+          copyBtn.addEventListener("click", async () => {
+            try {
+              await copyTextToClipboard(url);
+              copyBtn.textContent = "已复制";
+              setTimeout(() => (copyBtn.textContent = "复制"), 900);
+            } catch (e) {
+              setError("复制失败，请手动复制链接。");
+            }
+          });
+
+          top.appendChild(pill);
+          top.appendChild(copyBtn);
+
+          const a = document.createElement("a");
+          a.href = url;
+          a.target = "_blank";
+          a.rel = "noreferrer";
+          a.textContent = url;
+
+          const keywordsLine = document.createElement("div");
+          keywordsLine.className = "pill";
+          keywordsLine.textContent = group.join("，");
+
+          item.appendChild(top);
+          item.appendChild(a);
+          item.appendChild(keywordsLine);
+
+          linksBoxEl.appendChild(item);
+        });
+      }
+
+      generateBtn.addEventListener("click", render);
+      clearBtn.addEventListener("click", () => {
+        inputEl.value = "";
+        render();
+        inputEl.focus();
+      });
+      copyAllBtn.addEventListener("click", async () => {
+        setError("");
+        const tpl = (templateInput.value || defaultTemplate).trim();
+        if (!tpl.includes("{q}")) {
+          setError("链接格式必须包含 {q}");
+          return;
+        }
+        const keywords = uniqueKeywords(parseKeywords(inputEl.value));
+        const groups = chunkByFive(keywords);
+        const urls = groups.map(buildTrendsUrl).join("\n");
+        try {
+          await copyTextToClipboard(urls);
+          copyAllBtn.textContent = "已复制";
+          setTimeout(() => (copyAllBtn.textContent = "复制全部链接"), 900);
+        } catch (e) {
+          setError("复制失败，请手动复制链接。");
+        }
+      });
+
+      inputEl.addEventListener("input", () => {
+        const keywords = uniqueKeywords(parseKeywords(inputEl.value));
+        statusTextEl.textContent = keywords.length ? `识别到 ${keywords.length} 个关键词` : "";
+        countBoxEl.textContent = `关键词：${keywords.length}，链接：${chunkByFive(keywords).length}`;
+      });
+
+      render();
+    </script>
+  </body>
+</html>

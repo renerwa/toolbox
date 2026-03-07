@@ -232,6 +232,7 @@
           ></textarea>
           <div class="row">
             <button class="primary" id="generateBtn" type="button">生成链接</button>
+            <button id="openAllBtn" type="button">打开所有链接</button>
             <button id="copyAllBtn" type="button">复制全部链接</button>
             <button id="clearBtn" type="button">清空</button>
           </div>
@@ -269,6 +270,7 @@
       const linksBoxEl = document.getElementById("linksBox");
       const linksMetaEl = document.getElementById("linksMeta");
       const generateBtn = document.getElementById("generateBtn");
+      const openAllBtn = document.getElementById("openAllBtn");
       const copyAllBtn = document.getElementById("copyAllBtn");
       const clearBtn = document.getElementById("clearBtn");
       const templateInput = document.getElementById("templateInput");
@@ -341,16 +343,22 @@
       function setError(message) {
         errorBoxEl.textContent = message || "";
       }
+      function assertTemplateValid() {
+        const tpl = (templateInput.value || defaultTemplate).trim();
+        if (!tpl.includes("{q}")) {
+          setError("链接格式必须包含 {q}");
+          return false;
+        }
+        return true;
+      }
 
       function render() {
         setError("");
-        const tpl = (templateInput.value || defaultTemplate).trim();
-        if (!tpl.includes("{q}")) {
+        if (!assertTemplateValid()) {
           linksBoxEl.innerHTML = "";
           statusTextEl.textContent = "";
           countBoxEl.textContent = "";
           linksMetaEl.textContent = "";
-          setError("链接格式必须包含 {q}");
           return;
         }
         const keywords = uniqueKeywords(parseKeywords(inputEl.value));
@@ -417,6 +425,21 @@
       }
 
       generateBtn.addEventListener("click", render);
+      openAllBtn.addEventListener("click", () => {
+        setError("");
+        if (!assertTemplateValid()) return;
+        const keywords = uniqueKeywords(parseKeywords(inputEl.value));
+        const groups = chunkByFive(keywords);
+        const urls = groups.map(buildTrendsUrl);
+        if (urls.length === 0) return;
+
+        let blocked = 0;
+        for (const url of urls) {
+          const w = window.open(url, "_blank", "noopener,noreferrer");
+          if (!w) blocked += 1;
+        }
+        if (blocked > 0) setError(`有 ${blocked} 个链接被浏览器拦截，请允许弹窗后重试。`);
+      });
       clearBtn.addEventListener("click", () => {
         inputEl.value = "";
         render();
@@ -424,11 +447,7 @@
       });
       copyAllBtn.addEventListener("click", async () => {
         setError("");
-        const tpl = (templateInput.value || defaultTemplate).trim();
-        if (!tpl.includes("{q}")) {
-          setError("链接格式必须包含 {q}");
-          return;
-        }
+        if (!assertTemplateValid()) return;
         const keywords = uniqueKeywords(parseKeywords(inputEl.value));
         const groups = chunkByFive(keywords);
         const urls = groups.map(buildTrendsUrl).join("\n");

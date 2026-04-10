@@ -107,6 +107,7 @@ export default function NineGridCutter() {
     const y0 = croppedAreaPixels.y;
     const w = croppedAreaPixels.width;
     const h = croppedAreaPixels.height;
+    const outputSize = 800;
 
     const nextTiles: Tile[] = [];
 
@@ -121,20 +122,30 @@ export default function NineGridCutter() {
         const sw = Math.max(1, sx1 - sx0);
 
         const canvas = document.createElement("canvas");
-        canvas.width = sw;
-        canvas.height = sh;
+        canvas.width = outputSize;
+        canvas.height = outputSize;
 
         const ctx = canvas.getContext("2d");
         if (!ctx) continue;
 
         if (format === "image/jpeg") {
           ctx.fillStyle = "#000000";
-          ctx.fillRect(0, 0, sw, sh);
+          ctx.fillRect(0, 0, outputSize, outputSize);
         }
 
         ctx.imageSmoothingEnabled = true;
         ctx.imageSmoothingQuality = "high";
-        ctx.drawImage(img, sx0, sy0, sw, sh, 0, 0, sw, sh);
+        ctx.drawImage(
+          img,
+          sx0,
+          sy0,
+          sw,
+          sh,
+          0,
+          0,
+          outputSize,
+          outputSize
+        );
 
         const blob = await canvasToBlob(canvas, format, jpegQuality);
         const url = URL.createObjectURL(blob);
@@ -282,8 +293,6 @@ export default function NineGridCutter() {
                       setCroppedAreaPixels(areaPixels);
                     }}
                     objectFit="contain"
-                    showGrid={false}
-                    classes={{ cropAreaClassName: "nineGridCropArea" }}
                   />
                 </>
               ) : (
@@ -324,8 +333,8 @@ export default function NineGridCutter() {
                     <NextImage
                       src={t.url}
                       alt={t.name}
-                      width={600}
-                      height={600}
+                      width={800}
+                      height={800}
                       unoptimized
                       className="aspect-square w-full object-cover"
                     />

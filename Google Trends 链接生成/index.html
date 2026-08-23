@@ -460,10 +460,29 @@
         }
       });
 
-      inputEl.addEventListener("input", () => {
+      function normalizeKeywordSeparators() {
+        const normalized = inputEl.value.replace(/[，,|]/g, "\n");
+        if (normalized === inputEl.value) return;
+
+        const selectionStart = inputEl.selectionStart;
+        const selectionEnd = inputEl.selectionEnd;
+        inputEl.value = normalized;
+        inputEl.setSelectionRange(selectionStart, selectionEnd);
+      }
+
+      function updateKeywordStats() {
         const keywords = uniqueKeywords(parseKeywords(inputEl.value));
         statusTextEl.textContent = keywords.length ? `识别到 ${keywords.length} 个关键词` : "";
         countBoxEl.textContent = `关键词：${keywords.length}，链接：${chunkByFive(keywords).length}`;
+      }
+
+      inputEl.addEventListener("input", (event) => {
+        if (!event.isComposing) normalizeKeywordSeparators();
+        updateKeywordStats();
+      });
+      inputEl.addEventListener("compositionend", () => {
+        normalizeKeywordSeparators();
+        updateKeywordStats();
       });
 
       render();

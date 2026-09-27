@@ -1,0 +1,94 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="color-scheme" content="light">
+  <title>中石化通信报文解析器</title>
+  <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+  <header class="app-header">
+    <div class="header-inner">
+      <div class="brand-block">
+        <span class="brand-mark" aria-hidden="true">FA</span>
+        <div>
+          <h1>中石化通信报文解析器</h1>
+          <p>加油机与 PC 机通信数据接口协议</p>
+        </div>
+      </div>
+      <span class="protocol-badge">旧版协议 V1.1</span>
+    </div>
+  </header>
+
+  <main>
+    <section class="input-band" aria-labelledby="input-title">
+      <div class="content-width">
+        <div class="section-heading">
+          <div>
+            <p class="section-index">01 / INPUT</p>
+            <h2 id="input-title">通信日志或十六进制报文</h2>
+          </div>
+          <span id="inputCounter" class="input-counter">0 字符</span>
+        </div>
+
+        <label class="sr-only" for="commandInput">通信日志或十六进制报文</label>
+        <textarea id="commandInput" rows="7" spellcheck="false" autocomplete="off" placeholder="在此粘贴日志或以 FA 开头的十六进制报文"></textarea>
+
+        <div class="input-actions">
+          <div id="inputMessage" class="input-message" role="status" aria-live="polite"></div>
+          <div class="button-row">
+            <button id="clearInputButton" class="button button-secondary" type="button">清空输入</button>
+            <button id="parseButton" class="button button-primary" type="button">解析并添加</button>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <section id="summaryBand" class="summary-band" aria-label="解析汇总">
+      <div class="content-width summary-grid">
+        <div class="summary-item"><span>唯一报文</span><strong id="uniqueCount">0</strong></div>
+        <div class="summary-item"><span>合并重复</span><strong id="duplicateCount">0</strong></div>
+        <div class="summary-item"><span>CRC 通过</span><strong id="crcCount">0</strong></div>
+        <div class="summary-item"><span>异常报文</span><strong id="errorCount">0</strong></div>
+      </div>
+    </section>
+
+    <section class="results-band" aria-labelledby="results-title">
+      <div class="content-width">
+        <div class="results-toolbar">
+          <div>
+            <p class="section-index">02 / RESULTS</p>
+            <h2 id="results-title">解析结果</h2>
+          </div>
+          <div class="toolbar-actions">
+            <button id="toggleAllButton" class="text-button" type="button" disabled>全部折叠</button>
+            <span class="toolbar-divider" aria-hidden="true"></span>
+            <button id="clearAllButton" class="text-button text-button-danger" type="button" disabled>清空全部</button>
+          </div>
+        </div>
+
+        <div id="emptyState" class="empty-state">
+          <span class="empty-code">FA</span>
+          <strong>暂无解析结果</strong>
+        </div>
+        <div id="results" class="results-list"></div>
+      </div>
+    </section>
+  </main>
+
+  <footer class="app-footer">
+    <div class="content-width">
+      <span>本地离线解析</span>
+      <span>数据不会上传</span>
+      <span>协议来源：试行稿 V1.1</span>
+    </div>
+  </footer>
+
+  <script src="js/protocol-v1.js"></script>
+  <script src="js/frame-parser.js"></script>
+  <script src="js/payload-parser.js"></script>
+  <script src="js/app.js"></script>
+</body>
+</html>
+

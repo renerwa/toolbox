@@ -1,0 +1,10 @@
+{
+  "name": "sinopec-command-parser",
+  "version": "1.0.0",
+  "private": true,
+  "description": "中石化加油机与 PC 机旧版 V1.1 通信报文解析器",
+  "scripts": {
+    "test": "node --test"
+  }
+}
+

@@ -9,6 +9,7 @@
     inputCounter: document.getElementById("inputCounter"),
     inputMessage: document.getElementById("inputMessage"),
     parseButton: document.getElementById("parseButton"),
+    protocolSelect: document.getElementById("protocolSelect"),
     clearInputButton: document.getElementById("clearInputButton"),
     toggleAllButton: document.getElementById("toggleAllButton"),
     clearAllButton: document.getElementById("clearAllButton"),
@@ -221,7 +222,7 @@
   }
 
   function renderResultCard(group, index) {
-    const parsed = payloadParser.parsePayload(group.frame);
+    const parsed = payloadParser.parsePayload(group.frame, { protocol: elements.protocolSelect.value });
     const card = createElement("article", "result-card");
     if (state.collapsed.has(group.key)) card.classList.add("is-collapsed");
     card.dataset.key = group.key;
@@ -234,6 +235,7 @@
     header.append(title);
 
     const badges = createElement("div", "result-badges");
+    badges.append(badge(`${parsed.protocolLabel} ${parsed.protocolVersion}`, "neutral"));
     const lengthTone = group.frame.complete && group.frame.actualLength === group.frame.declaredLength ? "success" : "error";
     badges.append(badge(`${group.frame.declaredLength ?? "-"} B`, lengthTone));
     const crc = crcSummary(group);
@@ -325,6 +327,13 @@
     }
   });
   elements.parseButton.addEventListener("click", parseAndAdd);
+  elements.protocolSelect.addEventListener("change", () => {
+    if (state.occurrences.length) {
+      const mode = elements.protocolSelect.selectedOptions[0].textContent;
+      setMessage(`已切换为${mode}，现有结果已按新协议重新解析。`, "success");
+    }
+    render();
+  });
   elements.clearInputButton.addEventListener("click", () => {
     elements.input.value = "";
     setMessage("", "");

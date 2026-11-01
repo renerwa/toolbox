@@ -17,7 +17,7 @@
           <p>加油机与 PC 机通信数据接口协议</p>
         </div>
       </div>
-      <span class="protocol-badge">旧版协议 V1.1</span>
+      <span class="protocol-badge">09版 / 19版双协议</span>
     </div>
   </header>
 
@@ -38,6 +38,14 @@
         <div class="input-actions">
           <div id="inputMessage" class="input-message" role="status" aria-live="polite"></div>
           <div class="button-row">
+            <label class="protocol-picker" for="protocolSelect">
+              <span>协议</span>
+              <select id="protocolSelect">
+                <option value="auto">自动识别</option>
+                <option value="v1">09版 V1.1</option>
+                <option value="v19">19版 V1.00.011</option>
+              </select>
+            </label>
             <button id="clearInputButton" class="button button-secondary" type="button">清空输入</button>
             <button id="parseButton" class="button button-primary" type="button">解析并添加</button>
           </div>
@@ -81,12 +89,14 @@
     <div class="content-width">
       <span>本地离线解析</span>
       <span>数据不会上传</span>
-      <span>协议来源：试行稿 V1.1</span>
+      <span>协议来源：09版 V1.1 / 19版 V1.00.011</span>
     </div>
   </footer>
 
   <script src="js/protocol-v1.js"></script>
+  <script src="js/protocol-19.js"></script>
   <script src="js/frame-parser.js"></script>
+  <script src="js/payload-parser-19.js"></script>
   <script src="js/payload-parser.js"></script>
   <script src="js/app.js"></script>
 </body>

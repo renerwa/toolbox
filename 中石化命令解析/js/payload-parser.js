@@ -5,10 +5,13 @@
   const frameUtils = typeof module === "object" && module.exports
     ? require("./frame-parser.js")
     : root.SinopecFrameParser;
-  const api = factory(protocol, frameUtils);
+  const payloadParser19 = typeof module === "object" && module.exports
+    ? require("./payload-parser-19.js")
+    : root.SinopecPayloadParser19;
+  const api = factory(protocol, frameUtils, payloadParser19);
   if (typeof module === "object" && module.exports) module.exports = api;
   root.SinopecPayloadParser = api;
-})(typeof globalThis !== "undefined" ? globalThis : this, function (protocol, frameUtils) {
+})(typeof globalThis !== "undefined" ? globalThis : this, function (protocol, frameUtils, payloadParser19) {
   "use strict";
 
   const { bytesHex, byteHex } = frameUtils;
@@ -527,7 +530,7 @@
     return info.name;
   }
 
-  function parsePayload(frame) {
+  function parsePayloadV1(frame) {
     const payload = Array.from((frame && frame.payload) || []);
     const diagnostics = [];
     const groups = [];
@@ -588,6 +591,28 @@
     };
   }
 
+  function resolveProtocol(frame, options) {
+    const requested = options && options.protocol;
+    if (requested === "v1" || requested === "v19") return requested;
+    const code = frame && frame.payload ? frame.payload[0] : undefined;
+    if (code === undefined) return "v1";
+    if (code >= 0x10 && code <= 0x2f) return "v19";
+    if ((code >= 0x40 && code <= 0x4f) || code === 0x55) return "v19";
+    if (code === 0x50 || code === 0x51) return frame.payload.length >= 56 ? "v19" : "v1";
+    return "v1";
+  }
+
+  function parsePayload(frame, options) {
+    const selected = resolveProtocol(frame, options);
+    const parsed = selected === "v19" ? payloadParser19.parsePayload(frame) : parsePayloadV1(frame);
+    return {
+      ...parsed,
+      protocol: selected,
+      protocolVersion: selected === "v19" ? payloadParser19.version || "V1.00.011" : protocol.version,
+      protocolLabel: selected === "v19" ? "19版" : "09版",
+    };
+  }
+
   function findField(parsed, key) {
     for (const item of parsed.groups || []) {
       const field = item.fields.find((candidate) => candidate.key === key);
@@ -598,6 +623,8 @@
 
   return {
     parsePayload,
+    parsePayloadV1,
+    resolveProtocol,
     findField,
     bcdDigits,
     bcdDate,

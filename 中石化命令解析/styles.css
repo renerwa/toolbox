@@ -212,6 +212,34 @@ h2 {
   gap: 8px;
 }
 
+.button-row {
+  flex-wrap: wrap;
+}
+
+.protocol-picker {
+  display: flex;
+  align-items: center;
+  gap: 7px;
+  color: var(--muted);
+  font-size: 12px;
+  white-space: nowrap;
+}
+
+.protocol-picker select {
+  min-height: 38px;
+  padding: 7px 30px 7px 10px;
+  color: var(--ink);
+  border: 1px solid #aeb8b1;
+  border-radius: 3px;
+  background: #fff;
+  font: inherit;
+}
+
+.protocol-picker select:focus-visible {
+  outline: 3px solid rgba(216, 73, 49, 0.27);
+  outline-offset: 2px;
+}
+
 .button {
   min-height: 38px;
   padding: 8px 15px;
@@ -800,6 +828,11 @@ h2 {
   }
 
   .button-row {
+    justify-content: flex-end;
+  }
+
+  .protocol-picker {
+    width: 100%;
     justify-content: flex-end;
   }
 
